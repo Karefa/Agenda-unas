@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Agenda de Uñas</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#ffe6f2;
+padding:20px;
+text-align:center;
+}
+
+h1{
+color:#ff2e8a;
+}
+
+input,select,button{
+padding:10px;
+margin:5px;
+width:90%;
+max-width:300px;
+}
+
+button{
+background:#ff2e8a;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+table{
+width:100%;
+background:white;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Agenda de Uñas 💅</h1>
+
+<h3>Reservar Hora</h3>
+
+<input id="nombre" placeholder="Nombre">
+
+<input id="telefono" placeholder="Teléfono">
+
+<input type="date" id="fecha">
+
+<select id="hora">
+
+<option>09:00</option>
+<option>10:00</option>
+<option>11:00</option>
+<option>12:00</option>
+<option>13:00</option>
+<option>14:00</option>
+<option>15:00</option>
+<option>16:00</option>
+<option>17:00</option>
+
+</select>
+
+<br>
+
+<button onclick="reservar()">Reservar Hora</button>
+
+<h3>Citas Agendadas</h3>
+
+<table>
+
+<tr>
+<th>Cliente</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>WhatsApp</th>
+</tr>
+
+<tbody id="tabla"></tbody>
+
+</table>
+
+<script>
+
+let citas=JSON.parse(localStorage.getItem("citas"))||[];
+
+function guardar(){
+
+localStorage.setItem("citas",JSON.stringify(citas));
+
+}
+
+function reservar(){
+
+let nombre=document.getElementById("nombre").value;
+
+let telefono=document.getElementById("telefono").value;
+
+let fecha=document.getElementById("fecha").value;
+
+let hora=document.getElementById("hora").value;
+
+let ocupado=citas.find(c=>c.fecha==fecha && c.hora==hora);
+
+if(ocupado){
+
+alert("Esta hora ya está ocupada");
+
+return;
+
+}
+
+let cita={nombre,telefono,fecha,hora};
+
+citas.push(cita);
+
+guardar();
+
+mostrar();
+
+alert("Reserva confirmada 💅");
+
+}
+
+function mostrar(){
+
+let tabla=document.getElementById("tabla");
+
+tabla.innerHTML="";
+
+citas.forEach((c,i)=>{
+
+tabla.innerHTML+=`
+
+<tr>
+
+<td>${c.nombre}</td>
+
+<td>${c.fecha}</td>
+
+<td>${c.hora}</td>
+
+<td>
+
+<button onclick="whatsapp(${i})">
+
+Enviar
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+function whatsapp(i){
+
+let c=citas[i];
+
+let mensaje="Hola 😊 te recuerdo tu hora de uñas el "+c.fecha+" a las "+c.hora+" 💅";
+
+let url="https://wa.me/56"+c.telefono+"?text="+encodeURIComponent(mensaje);
+
+window.open(url);
+
+}
+
+mostrar();
+
+</script>
+
+</body>
+</html>
