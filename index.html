@@ -8,6 +8,8 @@
 
 <title>Agenda de Uñas</title>
 
+<link rel="manifest" href="manifest.json">
+
 <style>
 
 body{
@@ -23,7 +25,7 @@ color:#ff2e8a;
 
 input,select,button{
 padding:10px;
-margin:5px;
+margin:6px;
 width:90%;
 max-width:300px;
 }
@@ -34,6 +36,10 @@ color:white;
 border:none;
 border-radius:6px;
 cursor:pointer;
+}
+
+button:hover{
+background:#e60073;
 }
 
 table{
@@ -75,6 +81,7 @@ padding:8px;
 <option>15:00</option>
 <option>16:00</option>
 <option>17:00</option>
+<option>18:00</option>
 
 </select>
 
@@ -91,6 +98,7 @@ padding:8px;
 <th>Fecha</th>
 <th>Hora</th>
 <th>WhatsApp</th>
+<th>Eliminar</th>
 </tr>
 
 <tbody id="tabla"></tbody>
@@ -102,9 +110,7 @@ padding:8px;
 let citas=JSON.parse(localStorage.getItem("citas"))||[];
 
 function guardar(){
-
 localStorage.setItem("citas",JSON.stringify(citas));
-
 }
 
 function reservar(){
@@ -116,6 +122,11 @@ let telefono=document.getElementById("telefono").value;
 let fecha=document.getElementById("fecha").value;
 
 let hora=document.getElementById("hora").value;
+
+if(nombre=="" || telefono=="" || fecha==""){
+alert("Completa todos los datos");
+return;
+}
 
 let ocupado=citas.find(c=>c.fecha==fecha && c.hora==hora);
 
@@ -160,9 +171,15 @@ tabla.innerHTML+=`
 <td>
 
 <button onclick="whatsapp(${i})">
+Recordar
+</button>
 
-Enviar
+</td>
 
+<td>
+
+<button onclick="eliminar(${i})">
+X
 </button>
 
 </td>
@@ -172,6 +189,16 @@ Enviar
 `;
 
 });
+
+}
+
+function eliminar(i){
+
+citas.splice(i,1);
+
+guardar();
+
+mostrar();
 
 }
 
@@ -192,4 +219,5 @@ mostrar();
 </script>
 
 </body>
+
 </html>
