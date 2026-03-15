@@ -14,7 +14,7 @@
 
 body{
 font-family:Arial;
-background:#ffe6f2;
+background:#f6d7e2;
 padding:20px;
 text-align:center;
 }
@@ -100,6 +100,8 @@ padding:8px;
 <select id="hora"></select>
 
 <button onclick="reservar()">Reservar</button>
+
+<button onclick="whatsapp()">Recordar por WhatsApp</button>
 
 </div>
 
@@ -199,6 +201,21 @@ hora
 });
 
 alert("Reserva guardada 💅");
+
+}
+
+window.whatsapp=function(){
+
+let nombre=document.getElementById("nombre").value;
+let telefono=document.getElementById("telefono").value;
+let fecha=document.getElementById("fecha").value;
+let hora=document.getElementById("hora").value;
+
+let mensaje=`Hola ${nombre}, tu cita de uñas es el ${fecha} a las ${hora} 💅`;
+
+let url=`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+window.open(url);
 
 }
 
@@ -304,9 +321,17 @@ window.login=function(){
 let clave=prompt("Clave dueña");
 
 if(clave=="1234"){
+
 document.getElementById("adminPanel").style.display="block";
+
+setTimeout(()=>{
+calendar.updateSize();
+},300);
+
 }else{
+
 alert("Clave incorrecta");
+
 }
 
 }
