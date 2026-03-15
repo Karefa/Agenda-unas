@@ -101,8 +101,6 @@ padding:8px;
 
 <button onclick="reservar()">Reservar</button>
 
-<button onclick="whatsapp()">Recordar por WhatsApp</button>
-
 </div>
 
 <br>
@@ -127,6 +125,7 @@ padding:8px;
 <th>Cliente</th>
 <th>Fecha</th>
 <th>Hora</th>
+<th>Recordar</th>
 <th>Eliminar</th>
 </tr>
 
@@ -204,14 +203,9 @@ alert("Reserva guardada 💅");
 
 }
 
-window.whatsapp=function(){
+function recordar(nombre,telefono,fecha,hora){
 
-let nombre=document.getElementById("nombre").value;
-let telefono=document.getElementById("telefono").value;
-let fecha=document.getElementById("fecha").value;
-let hora=document.getElementById("hora").value;
-
-let mensaje=`Hola ${nombre}, tu cita de uñas es el ${fecha} a las ${hora} 💅`;
+let mensaje=`Hola ${nombre}, te recordamos tu cita de uñas el ${fecha} a las ${hora} 💅`;
 
 let url=`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 
@@ -275,6 +269,7 @@ tabla.innerHTML+=`
 <td>${c.nombre}</td>
 <td>${c.fecha}</td>
 <td>${c.hora}</td>
+<td><button onclick="recordar('${c.nombre}','${c.telefono}','${c.fecha}','${c.hora}')">WhatsApp</button></td>
 <td><button onclick="eliminar('${key}')">X</button></td>
 </tr>
 `;
