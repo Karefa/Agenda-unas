@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Agenda de Uñas</title>
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 
 <style>
 
@@ -42,20 +44,20 @@ border-radius:6px;
 cursor:pointer;
 }
 
-table{
-width:100%;
-margin-top:20px;
+#calendar{
+max-width:900px;
+margin:40px auto;
 background:white;
-border-collapse:collapse;
+padding:10px;
+border-radius:10px;
 }
 
-th,td{
-border:1px solid #ddd;
-padding:8px;
-}
-
-#admin{
-display:none;
+#clientes{
+background:white;
+max-width:400px;
+margin:auto;
+padding:10px;
+border-radius:10px;
 }
 
 </style>
@@ -71,8 +73,11 @@ display:none;
 <h3>Reservar Hora</h3>
 
 <input id="nombre" placeholder="Nombre">
+
 <input id="telefono" placeholder="Teléfono">
+
 <input type="date" id="fecha">
+
 <select id="hora">
 
 <option>09:00</option>
@@ -92,29 +97,15 @@ display:none;
 
 </div>
 
-<br>
+<h2>Calendario de citas</h2>
 
-<button onclick="login()">Panel Dueña</button>
+<div id="calendar"></div>
 
-<div id="admin">
+<h2>Lista de clientas</h2>
 
-<h3>Agenda completa</h3>
+<ul id="clientes"></ul>
 
-<table>
-
-<tr>
-<th>Cliente</th>
-<th>Fecha</th>
-<th>Hora</th>
-<th>WhatsApp</th>
-<th>Eliminar</th>
-</tr>
-
-<tbody id="tabla"></tbody>
-
-</table>
-
-</div>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <script type="module">
 
@@ -124,8 +115,7 @@ import {
 getDatabase,
 ref,
 push,
-onValue,
-remove
+onValue
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -139,97 +129,99 @@ appId: "1:1025490676078:web:f6ecda60cac080e3a5b97f"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+
 const citasRef = ref(db,"citas");
+
+let calendar;
+
+document.addEventListener("DOMContentLoaded",function(){
+
+calendar = new FullCalendar.Calendar(document.getElementById("calendar"),{
+
+initialView:"dayGridMonth",
+
+locale:"es",
+
+events:[]
+
+});
+
+calendar.render();
+
+});
 
 window.reservar=function(){
 
 let nombre=document.getElementById("nombre").value;
+
 let telefono=document.getElementById("telefono").value;
+
 let fecha=document.getElementById("fecha").value;
+
 let hora=document.getElementById("hora").value;
 
 push(citasRef,{
-nombre:nombre,
-telefono:telefono,
-fecha:fecha,
-hora:hora
+nombre,
+telefono,
+fecha,
+hora
 });
 
-let mensaje="Hola 😊 tu hora de uñas fue reservada para "+fecha+" a las "+hora+" 💅";
-
-let url="https://wa.me/56"+telefono+"?text="+encodeURIComponent(mensaje);
-
-window.open(url);
-
-alert("Reserva realizada");
+alert("Reserva guardada 💅");
 
 }
 
 onValue(citasRef,(snapshot)=>{
 
-let tabla=document.getElementById("tabla");
+let eventos=[];
 
-tabla.innerHTML="";
+let listaClientes=document.getElementById("clientes");
+
+listaClientes.innerHTML="";
+
+let clientes=new Set();
 
 snapshot.forEach((child)=>{
 
 let c=child.val();
-let key=child.key;
 
-tabla.innerHTML+=`
+eventos.push({
 
-<tr>
+title:c.nombre+" "+c.hora,
 
-<td>${c.nombre}</td>
-<td>${c.fecha}</td>
-<td>${c.hora}</td>
-
-<td>
-<button onclick="recordar('${c.telefono}','${c.fecha}','${c.hora}')">
-Recordar
-</button>
-</td>
-
-<td>
-<button onclick="eliminar('${key}')">
-X
-</button>
-</td>
-
-</tr>
-
-`;
+start:c.fecha
 
 });
 
+clientes.add(c.nombre);
+
 });
 
-window.eliminar=function(key){
-remove(ref(db,"citas/"+key));
-}
+calendar.removeAllEvents();
 
-window.recordar=function(tel,fecha,hora){
+calendar.addEventSource(eventos);
 
-let mensaje="Hola 😊 te recuerdo tu hora de uñas el "+fecha+" a las "+hora+" 💅";
+clientes.forEach(c=>{
 
-let url="https://wa.me/56"+tel+"?text="+encodeURIComponent(mensaje);
+listaClientes.innerHTML+=`<li>${c}</li>`;
 
-window.open(url);
+});
 
-}
+notificarReserva();
 
-window.login=function(){
+});
 
-let clave=prompt("Clave de dueña");
+function notificarReserva(){
 
-if(clave=="1234"){
+if(Notification.permission==="granted"){
 
-document.getElementById("admin").style.display="block";
+new Notification("Nueva reserva 💅");
 
 }else{
 
-alert("Clave incorrecta");
+Notification.requestPermission();
 
 }
 
