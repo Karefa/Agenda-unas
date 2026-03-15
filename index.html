@@ -93,7 +93,7 @@ padding:8px;
 
 <input id="nombre" placeholder="Nombre">
 
-<input id="telefono" placeholder="Teléfono">
+<input id="telefono" placeholder="Teléfono (ej: 912345678)">
 
 <input type="date" id="fecha">
 
@@ -203,13 +203,31 @@ alert("Reserva guardada 💅");
 
 }
 
+function formatearTelefono(numero){
+
+let limpio = numero.replace(/\D/g,"");
+
+if(limpio.startsWith("9")){
+return "56"+limpio;
+}
+
+if(limpio.startsWith("56")){
+return limpio;
+}
+
+return limpio;
+
+}
+
 function recordar(nombre,telefono,fecha,hora){
 
-let mensaje=`Hola ${nombre}, te recordamos tu cita de uñas el ${fecha} a las ${hora} 💅`;
+let telefonoFinal = formatearTelefono(telefono);
 
-let url=`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+let mensaje = `Hola ${nombre}, te recordamos tu cita de uñas el ${fecha} a las ${hora} 💅`;
 
-window.open(url);
+let url = `https://api.whatsapp.com/send?phone=${telefonoFinal}&text=${encodeURIComponent(mensaje)}`;
+
+window.open(url,"_blank");
 
 }
 
