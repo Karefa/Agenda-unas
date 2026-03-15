@@ -45,6 +45,14 @@ border-radius:6px;
 cursor:pointer;
 }
 
+#adminPanel{
+display:none;
+background:white;
+padding:20px;
+margin-top:30px;
+border-radius:10px;
+}
+
 #calendar{
 max-width:900px;
 margin:40px auto;
@@ -59,6 +67,16 @@ max-width:400px;
 margin:auto;
 padding:10px;
 border-radius:10px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:8px;
 }
 
 </style>
@@ -85,6 +103,12 @@ border-radius:10px;
 
 </div>
 
+<br>
+
+<button onclick="login()">Portal Dueña</button>
+
+<div id="adminPanel">
+
 <h2>Calendario de citas</h2>
 
 <div id="calendar"></div>
@@ -92,6 +116,23 @@ border-radius:10px;
 <h2>Lista de clientas</h2>
 
 <ul id="clientes"></ul>
+
+<h2>Agenda completa</h2>
+
+<table>
+
+<tr>
+<th>Cliente</th>
+<th>Fecha</th>
+<th>Hora</th>
+<th>Eliminar</th>
+</tr>
+
+<tbody id="tabla"></tbody>
+
+</table>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
@@ -103,7 +144,8 @@ import {
 getDatabase,
 ref,
 push,
-onValue
+onValue,
+remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -117,9 +159,7 @@ appId: "1:1025490676078:web:f6ecda60cac080e3a5b97f"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
-
 const citasRef = ref(db,"citas");
 
 let calendar;
@@ -135,9 +175,7 @@ document.addEventListener("DOMContentLoaded",function(){
 calendar = new FullCalendar.Calendar(document.getElementById("calendar"),{
 
 initialView:"dayGridMonth",
-
 locale:"es",
-
 events:[]
 
 });
@@ -149,11 +187,8 @@ calendar.render();
 window.reservar=function(){
 
 let nombre=document.getElementById("nombre").value;
-
 let telefono=document.getElementById("telefono").value;
-
 let fecha=document.getElementById("fecha").value;
-
 let hora=document.getElementById("hora").value;
 
 push(citasRef,{
@@ -182,7 +217,6 @@ if(!ocupado){
 let op=document.createElement("option");
 
 op.value=h;
-
 op.textContent=h;
 
 select.appendChild(op);
@@ -196,49 +230,51 @@ select.appendChild(op);
 onValue(citasRef,(snapshot)=>{
 
 let eventos=[];
-
 let listaClientes=document.getElementById("clientes");
+let tabla=document.getElementById("tabla");
 
 listaClientes.innerHTML="";
+tabla.innerHTML="";
 
 let clientes=new Set();
-
 let citas=[];
 
 snapshot.forEach((child)=>{
 
 let c=child.val();
+let key=child.key;
 
 citas.push(c);
 
 eventos.push({
-
 title:c.nombre+" "+c.hora,
-
 start:c.fecha
-
 });
 
 clientes.add(c.nombre);
 
+tabla.innerHTML+=`
+<tr>
+<td>${c.nombre}</td>
+<td>${c.fecha}</td>
+<td>${c.hora}</td>
+<td><button onclick="eliminar('${key}')">X</button></td>
+</tr>
+`;
+
 });
 
 calendar.removeAllEvents();
-
 calendar.addEventSource(eventos);
 
 clientes.forEach(c=>{
-
 listaClientes.innerHTML+=`<li>${c}</li>`;
-
 });
 
 let fecha=document.getElementById("fecha").value;
 
 if(fecha){
-
 actualizarHoras(fecha,citas);
-
 }
 
 });
@@ -250,9 +286,7 @@ onValue(citasRef,(snapshot)=>{
 let citas=[];
 
 snapshot.forEach((child)=>{
-
 citas.push(child.val());
-
 });
 
 actualizarHoras(document.getElementById("fecha").value,citas);
@@ -261,8 +295,23 @@ actualizarHoras(document.getElementById("fecha").value,citas);
 
 });
 
+window.eliminar=function(key){
+remove(ref(db,"citas/"+key));
+}
+
+window.login=function(){
+
+let clave=prompt("Clave dueña");
+
+if(clave=="1234"){
+document.getElementById("adminPanel").style.display="block";
+}else{
+alert("Clave incorrecta");
+}
+
+}
+
 </script>
 
 </body>
-
 </html>
