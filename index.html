@@ -2,7 +2,6 @@
 <html lang="es">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -21,11 +20,18 @@ h1{
 color:#ff2e8a;
 }
 
+.caja{
+background:white;
+padding:20px;
+border-radius:10px;
+max-width:400px;
+margin:auto;
+}
+
 input,select,button{
 padding:10px;
-margin:5px;
+margin:6px;
 width:90%;
-max-width:300px;
 }
 
 button{
@@ -48,6 +54,10 @@ border:1px solid #ddd;
 padding:8px;
 }
 
+#admin{
+display:none;
+}
+
 </style>
 
 </head>
@@ -56,15 +66,15 @@ padding:8px;
 
 <h1>Agenda de Uñas 💅</h1>
 
+<div class="caja">
+
 <h3>Reservar Hora</h3>
 
 <input id="nombre" placeholder="Nombre">
-
 <input id="telefono" placeholder="Teléfono">
-
 <input type="date" id="fecha">
-
 <select id="hora">
+
 <option>09:00</option>
 <option>10:00</option>
 <option>11:00</option>
@@ -75,13 +85,20 @@ padding:8px;
 <option>16:00</option>
 <option>17:00</option>
 <option>18:00</option>
-</select>
 
-<br>
+</select>
 
 <button onclick="reservar()">Reservar</button>
 
-<h3>Citas</h3>
+</div>
+
+<br>
+
+<button onclick="login()">Panel Dueña</button>
+
+<div id="admin">
+
+<h3>Agenda completa</h3>
 
 <table>
 
@@ -89,11 +106,15 @@ padding:8px;
 <th>Cliente</th>
 <th>Fecha</th>
 <th>Hora</th>
+<th>WhatsApp</th>
+<th>Eliminar</th>
 </tr>
 
 <tbody id="tabla"></tbody>
 
 </table>
+
+</div>
 
 <script type="module">
 
@@ -103,9 +124,9 @@ import {
 getDatabase,
 ref,
 push,
-onValue
+onValue,
+remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
 
 const firebaseConfig = {
 apiKey: "AIzaSyC5BiLacxvvx7h9FqbYjLTHCmhpBgoswoY",
@@ -118,19 +139,14 @@ appId: "1:1025490676078:web:f6ecda60cac080e3a5b97f"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getDatabase(app);
-
 const citasRef = ref(db,"citas");
 
-window.reservar = function(){
+window.reservar=function(){
 
 let nombre=document.getElementById("nombre").value;
-
 let telefono=document.getElementById("telefono").value;
-
 let fecha=document.getElementById("fecha").value;
-
 let hora=document.getElementById("hora").value;
 
 push(citasRef,{
@@ -140,7 +156,13 @@ fecha:fecha,
 hora:hora
 });
 
-alert("Reserva guardada 💅");
+let mensaje="Hola 😊 tu hora de uñas fue reservada para "+fecha+" a las "+hora+" 💅";
+
+let url="https://wa.me/56"+telefono+"?text="+encodeURIComponent(mensaje);
+
+window.open(url);
+
+alert("Reserva realizada");
 
 }
 
@@ -153,16 +175,27 @@ tabla.innerHTML="";
 snapshot.forEach((child)=>{
 
 let c=child.val();
+let key=child.key;
 
 tabla.innerHTML+=`
 
 <tr>
 
 <td>${c.nombre}</td>
-
 <td>${c.fecha}</td>
-
 <td>${c.hora}</td>
+
+<td>
+<button onclick="recordar('${c.telefono}','${c.fecha}','${c.hora}')">
+Recordar
+</button>
+</td>
+
+<td>
+<button onclick="eliminar('${key}')">
+X
+</button>
+</td>
 
 </tr>
 
@@ -171,6 +204,36 @@ tabla.innerHTML+=`
 });
 
 });
+
+window.eliminar=function(key){
+remove(ref(db,"citas/"+key));
+}
+
+window.recordar=function(tel,fecha,hora){
+
+let mensaje="Hola 😊 te recuerdo tu hora de uñas el "+fecha+" a las "+hora+" 💅";
+
+let url="https://wa.me/56"+tel+"?text="+encodeURIComponent(mensaje);
+
+window.open(url);
+
+}
+
+window.login=function(){
+
+let clave=prompt("Clave de dueña");
+
+if(clave=="1234"){
+
+document.getElementById("admin").style.display="block";
+
+}else{
+
+alert("Clave incorrecta");
+
+}
+
+}
 
 </script>
 
