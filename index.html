@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 
 <meta charset="UTF-8">
@@ -78,20 +79,7 @@ border-radius:10px;
 
 <input type="date" id="fecha">
 
-<select id="hora">
-
-<option>09:00</option>
-<option>10:00</option>
-<option>11:00</option>
-<option>12:00</option>
-<option>13:00</option>
-<option>14:00</option>
-<option>15:00</option>
-<option>16:00</option>
-<option>17:00</option>
-<option>18:00</option>
-
-</select>
+<select id="hora"></select>
 
 <button onclick="reservar()">Reservar</button>
 
@@ -136,6 +124,12 @@ const citasRef = ref(db,"citas");
 
 let calendar;
 
+let horasBase=[
+"09:00","10:00","11:00","12:00",
+"13:00","14:00","15:00","16:00",
+"17:00","18:00"
+];
+
 document.addEventListener("DOMContentLoaded",function(){
 
 calendar = new FullCalendar.Calendar(document.getElementById("calendar"),{
@@ -173,6 +167,32 @@ alert("Reserva guardada 💅");
 
 }
 
+function actualizarHoras(fecha,citas){
+
+let select=document.getElementById("hora");
+
+select.innerHTML="";
+
+horasBase.forEach(h=>{
+
+let ocupado=citas.find(c=>c.fecha===fecha && c.hora===h);
+
+if(!ocupado){
+
+let op=document.createElement("option");
+
+op.value=h;
+
+op.textContent=h;
+
+select.appendChild(op);
+
+}
+
+});
+
+}
+
 onValue(citasRef,(snapshot)=>{
 
 let eventos=[];
@@ -183,9 +203,13 @@ listaClientes.innerHTML="";
 
 let clientes=new Set();
 
+let citas=[];
+
 snapshot.forEach((child)=>{
 
 let c=child.val();
+
+citas.push(c);
 
 eventos.push({
 
@@ -209,23 +233,33 @@ listaClientes.innerHTML+=`<li>${c}</li>`;
 
 });
 
-notificarReserva();
+let fecha=document.getElementById("fecha").value;
+
+if(fecha){
+
+actualizarHoras(fecha,citas);
+
+}
 
 });
 
-function notificarReserva(){
+document.getElementById("fecha").addEventListener("change",()=>{
 
-if(Notification.permission==="granted"){
+onValue(citasRef,(snapshot)=>{
 
-new Notification("Nueva reserva 💅");
+let citas=[];
 
-}else{
+snapshot.forEach((child)=>{
 
-Notification.requestPermission();
+citas.push(child.val());
 
-}
+});
 
-}
+actualizarHoras(document.getElementById("fecha").value,citas);
+
+});
+
+});
 
 </script>
 
