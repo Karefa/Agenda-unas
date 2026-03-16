@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Agenda de Uñas</title>
+<title>Agenda Uñas</title>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 
@@ -14,13 +14,9 @@
 
 body{
 font-family:Arial;
-background:#f6d7e2;
-padding:20px;
+background:#ffd6e7;
 text-align:center;
-}
-
-h1{
-color:#ff2e8a;
+padding:20px;
 }
 
 .caja{
@@ -56,17 +52,6 @@ border-radius:10px;
 #calendar{
 max-width:900px;
 margin:40px auto;
-background:white;
-padding:10px;
-border-radius:10px;
-}
-
-#clientes{
-background:white;
-max-width:400px;
-margin:auto;
-padding:10px;
-border-radius:10px;
 }
 
 table{
@@ -89,7 +74,7 @@ padding:8px;
 
 <div class="caja">
 
-<h3>Reservar Hora</h3>
+<h3>Reservar hora</h3>
 
 <input id="nombre" placeholder="Nombre">
 
@@ -109,7 +94,7 @@ padding:8px;
 
 <div id="adminPanel">
 
-<h2>Calendario de citas</h2>
+<h2>Calendario</h2>
 
 <div id="calendar"></div>
 
@@ -125,7 +110,7 @@ padding:8px;
 <th>Cliente</th>
 <th>Fecha</th>
 <th>Hora</th>
-<th>Recordar</th>
+<th>WhatsApp</th>
 <th>Eliminar</th>
 </tr>
 
@@ -150,6 +135,7 @@ remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
+
 apiKey: "AIzaSyC5BiLacxvvx7h9FqbYjLTHCmhpBgoswoY",
 authDomain: "agenda-unas-764d1.firebaseapp.com",
 databaseURL: "https://agenda-unas-764d1-default-rtdb.firebaseio.com/",
@@ -157,10 +143,13 @@ projectId: "agenda-unas-764d1",
 storageBucket: "agenda-unas-764d1.firebasestorage.app",
 messagingSenderId: "1025490676078",
 appId: "1:1025490676078:web:f6ecda60cac080e3a5b97f"
+
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+
 const citasRef = ref(db,"citas");
 
 let calendar;
@@ -203,34 +192,6 @@ alert("Reserva guardada 💅");
 
 }
 
-function formatearTelefono(numero){
-
-let limpio = numero.replace(/\D/g,"");
-
-if(limpio.startsWith("9")){
-return "56"+limpio;
-}
-
-if(limpio.startsWith("56")){
-return limpio;
-}
-
-return limpio;
-
-}
-
-function recordar(nombre,telefono,fecha,hora){
-
-let telefonoFinal = formatearTelefono(telefono);
-
-let mensaje = `Hola ${nombre}, te recordamos tu cita de uñas el ${fecha} a las ${hora} 💅`;
-
-let url = `https://api.whatsapp.com/send?phone=${telefonoFinal}&text=${encodeURIComponent(mensaje)}`;
-
-window.open(url,"_blank");
-
-}
-
 function actualizarHoras(fecha,citas){
 
 let select=document.getElementById("hora");
@@ -256,14 +217,30 @@ select.appendChild(op);
 
 }
 
+window.recordar=function(nombre,telefono,fecha,hora){
+
+let limpio = telefono.replace(/\D/g,"");
+
+if(limpio.startsWith("9")){
+limpio="56"+limpio;
+}
+
+let mensaje=`Hola ${nombre}, te recordamos tu cita de uñas el ${fecha} a las ${hora} 💅`;
+
+let url="https://wa.me/"+limpio+"?text="+encodeURIComponent(mensaje);
+
+window.location.href=url;
+
+}
+
 onValue(citasRef,(snapshot)=>{
 
 let eventos=[];
-let listaClientes=document.getElementById("clientes");
 let tabla=document.getElementById("tabla");
+let listaClientes=document.getElementById("clientes");
 
-listaClientes.innerHTML="";
 tabla.innerHTML="";
+listaClientes.innerHTML="";
 
 let clientes=new Set();
 let citas=[];
@@ -326,7 +303,9 @@ actualizarHoras(document.getElementById("fecha").value,citas);
 });
 
 window.eliminar=function(key){
+
 remove(ref(db,"citas/"+key));
+
 }
 
 window.login=function(){
